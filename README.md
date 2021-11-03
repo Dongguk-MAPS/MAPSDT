@@ -13,4 +13,17 @@ The easiest way to install MAPSDT framework is to download it from [PyPI](https:
 ```
 pip install MAPSDT==0.1.5
 ```
+
 **Usage**
+```
+pip install MAPSDT==0.1.5
+```
+
+**Outcomes**⭐️
+
+**Model save and restoration**
+You can save your trained models. This makes your model ready for transfer learning.
+
+```python
+MAPSDT(save=True)
+```
