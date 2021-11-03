@@ -20,10 +20,10 @@ MAPSDT(df)
 ```
 
 **Outcomes**
-```
-![image][KakaoTalk_20210721_162829839](https://user-images.githubusercontent.com/70674000/140031723-b65478d2-8b1c-476b-801a-26c0d4a1adb1.jpg)
 
-```
+![KakaoTalk_20210721_162829839](https://user-images.githubusercontent.com/70674000/140031723-b65478d2-8b1c-476b-801a-26c0d4a1adb1.jpg)
+
+
 
 **Model save and restoration**
 You can save your trained models. This makes your model ready for transfer learning.
