@@ -25,6 +25,7 @@ MAPSDT(df)
 
 
 **Model save and restoration**
+
 You can save your trained models. This makes your model ready for transfer learning.
 
 ```python
