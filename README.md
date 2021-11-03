@@ -1,4 +1,4 @@
-# MAPSDT
+# MAPSDT ⭐
 
 [![Downloads](https://pepy.tech/badge/MAPSDT)](https://pepy.tech/project/MAPSDT)
 [![OS](https://img.shields.io/badge/OS-windows-red)](https://windows.com)
@@ -19,7 +19,10 @@ pip install MAPSDT==0.1.5
 pip install MAPSDT==0.1.5
 ```
 
-**Outcomes**⭐️
+**Outcomes**
+```
+pip install MAPSDT==0.1.5
+```
 
 **Model save and restoration**
 You can save your trained models. This makes your model ready for transfer learning.
