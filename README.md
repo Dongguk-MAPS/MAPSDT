@@ -4,7 +4,7 @@
 [![OS](https://img.shields.io/badge/OS-windows-red)](https://windows.com)
 [![Python version](https://img.shields.io/badge/python-3.7.0-brightgreen.svg)](https://www.python.org) 
  
-**Team Leader** : [Chan-gyu](https://github.com/wjk1011)  **Team Member** : [Yu-ha](https://github.com/jiyuha)⭐
+**Team Leader** : [Chan-gyu](https://github.com/wjk1011)  **Team Member** : [Yu-ha](https://github.com/jiyuha)
 
 
 **Installation**
@@ -21,7 +21,8 @@ MAPSDT(df)
 
 **Outcomes**
 ```
-pip install MAPSDT==0.1.5
+![image](https://user-images.githubusercontent.com/70674000/140031667-f41ddf4b-205f-43ce-b08f-e2218eec799a.jpg)
+
 ```
 
 **Model save and restoration**
