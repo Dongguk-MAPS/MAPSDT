@@ -32,6 +32,7 @@ MAPSDT(df,
 ```
 
 **Outcomes**
+
 Built decision tree image is stored as Visualization.gv.svg in the /test-output directory.
 ![image](https://user-images.githubusercontent.com/70674000/141953129-3ed83e44-561f-4508-8c58-b97f9600eb45.png)
 
