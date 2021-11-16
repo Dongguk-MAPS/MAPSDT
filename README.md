@@ -20,14 +20,14 @@ import pandas as pd
 from MAPSDT import *
 
 df = pd.read_csv('dataset/wine.csv')
-MAPSDT(df,
-       tree=None,
-       split_portion=0.3,
-       max_depth=5,
-       Genetic_Progrmmaing=False,
-       init_size=50,
-       max_generations=50,
-       save=True
+MAPSDT(df,                            # dataset
+       tree=None,                     # You can use pre-trained trees.
+       split_portion=0.3,             # Decide the ratio of datasets.
+       max_depth=5, 		      # The maximum depth of the tree.
+       Genetic_Progrmmaing=False,     # You can use Genetic Programming for Feature Extraction.
+       init_size=50,		      # If you use GP, set init pool size.
+       max_generations=50,            # If you use GP, set the maximum generations.
+       save=True		      # You can save the decision tree.
        )
 ```
 
