@@ -32,8 +32,10 @@ MAPSDT(df,
 ```
 
 **Outcomes**
-Built decision tree images are stored as .svg and .gv in the /test-output directory.
+Built decision tree image is stored as Visualization.gv.svg in the /test-output directory.
+![image](https://user-images.githubusercontent.com/70674000/141953129-3ed83e44-561f-4508-8c58-b97f9600eb45.png)
 
+If the Visualization.gv.svg file is not created, paste text of Visualization.gv in web Graphviz.
 ```
 // Visualization
 digraph {
@@ -54,13 +56,11 @@ digraph {
 	11 -> 110 [label="<=104.0" arrowhead=normal color=antiquewhite4 fontname=Arial]
 	111 [label="totalsulfurdioxide
 ```
-![image](https://user-images.githubusercontent.com/70674000/141953129-3ed83e44-561f-4508-8c58-b97f9600eb45.png)
-If the .svg file is not created, paste text of .gv in web Graphviz.
 
 and built decision trees are stored as characteristic names of the trees in the /tree directory.
 
 
-![image](https://user-images.githubusercontent.com/70674000/141953129-3ed83e44-561f-4508-8c58-b97f9600eb45.png)
+
 
 
 **Model save and restoration**
