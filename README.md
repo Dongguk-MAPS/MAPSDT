@@ -15,8 +15,16 @@ pip install MAPSDT==0.1.5
 ```
 
 **Usage**
-```
-MAPSDT(df)
+```python
+MAPSDT(df,
+       tree=None,
+       split_portion=0.3,
+       max_depth=5,
+       Genetic_Progrmmaing=False,
+       init_size=50,
+       max_generations=50,
+       save=True
+       )
 ```
 
 **Outcomes**
