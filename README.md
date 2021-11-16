@@ -16,6 +16,10 @@ pip install MAPSDT==0.1.5
 
 **Usage**
 ```python
+import pandas as pd
+from MAPSDT import *
+
+df = pd.read_csv('dataset/wine.csv')
 MAPSDT(df,
        tree=None,
        split_portion=0.3,
