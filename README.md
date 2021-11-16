@@ -64,10 +64,3 @@ and built decision trees are stored as characteristic names of the trees in the 
 
 
 
-**Model save and restoration**
-
-You can save your trained models. This makes your model ready for transfer learning.
-
-```python
-MAPSDT(save=True)
-```
