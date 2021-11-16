@@ -20,14 +20,14 @@ import pandas as pd
 from MAPSDT import *
 
 df = pd.read_csv('dataset/wine.csv')
-MAPSDT(df,                            # dataset
-       tree=None,                     # You can use pre-trained trees.
-       split_portion=0.3,             # Decide the ratio of datasets.
-       max_depth=5, 		      # The maximum depth of the tree.
-       Genetic_Progrmmaing=False,     # You can use Genetic Programming for Feature Extraction.
-       init_size=50,		      # If you use GP, set init pool size.
-       max_generations=50,            # If you use GP, set the maximum generations.
-       save=True		      # You can save the decision tree.
+MAPSDT(df,                          					  # Dataset
+       tree=None,                   					  # You can use pre-trained trees.
+       split_portion=0.3,           					  # Decide the ratio of datasets.
+       max_depth=5, 		    					  # The maximum depth of the tree.
+       Genetic_Progrmmaing=False,    					  # You can use Genetic Programming for Feature Extraction.
+       init_size=50,		     					  # If you use GP, set initial pool size.
+       max_generations=50,          					  # If you use GP, set the maximum generations.
+       save=True		    					  # You can save the decision tree.
        )
 ```
 
@@ -36,7 +36,7 @@ MAPSDT(df,                            # dataset
 Built decision tree image is stored as Visualization.gv.svg in the /test-output directory.
 ![image](https://user-images.githubusercontent.com/70674000/141953129-3ed83e44-561f-4508-8c58-b97f9600eb45.png)
 
-If the Visualization.gv.svg file is not created, paste text of Visualization.gv in web Graphviz.
+If the Visualization.gv.svg file is not created, paste text of Visualization.gv in [Graphviz Online](https://dreampuf.github.io/GraphvizOnline/).
 ```
 // Visualization
 digraph {
