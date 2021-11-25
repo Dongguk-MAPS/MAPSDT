@@ -4,8 +4,7 @@
 [![OS](https://img.shields.io/badge/OS-windows-red)](https://windows.com)
 [![Python version](https://img.shields.io/badge/python-3.7.0-brightgreen.svg)](https://www.python.org) 
  
-**Team Leader** : [Chan-gyu](https://github.com/wjk1011)  **Team Member** : [Yu-ha](https://github.com/jiyuha)
-
+**Team Leader** : [Chan-gyu](https://github.com/wjk1011)  **Team Member** : [Yu-ha](https://github.com/jiyuha), [Joo-young](https://github.com/Limjooyoung), [Dong-hyun](https://github.com/donghyun305), [Ji-hoon](https://github.com/wlgns959), [Gwang-hyuk](https://github.com/panghyuk), [Yun-ju](https://github.com/YUNJU11)
 
 **Installation**
 
