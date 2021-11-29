@@ -10,7 +10,7 @@
 
 The easiest way to install MAPSDT framework is to download it from [PyPI](https://pypi.org/project/MAPSDT).
 ```
-pip install MAPSDT==0.1.5
+pip install MAPSDT==0.3.2
 ```
 
 **Usage**
@@ -19,7 +19,9 @@ import pandas as pd
 from MAPSDT import *
 
 df = pd.read_csv('dataset/wine.csv')
+target_names = ['True', 'False']
 MAPSDT(df,                          		     # Dataset
+       target_names,				     # type: list
        tree=None,                   	             # You can use pre-trained trees.
        split_portion=0.3,           		     # Decide the ratio of datasets.
        max_depth=5, 		    		     # The maximum depth of the tree.
