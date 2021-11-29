@@ -1,5 +1,4 @@
 #### MAPSDT
-======
 
 [![Downloads](https://pepy.tech/badge/MAPSDT)](https://pepy.tech/project/MAPSDT)
 [![OS](https://img.shields.io/badge/OS-windows-red)](https://windows.com)
@@ -7,9 +6,9 @@
  
 **Team Leader** : [Chan-gyu](https://github.com/wjk1011)  **Team Member** : [Yu-ha](https://github.com/jiyuha), [Joo-young](https://github.com/Limjooyoung), [Dong-hyun](https://github.com/donghyun305), [Ji-hoon](https://github.com/wlgns959), [Gwang-hyuk](https://github.com/panghyuk), [Yun-ju](https://github.com/YUNJU11)
 
------
+
 ### **Installation**
------
+
 
 The easiest way to install MAPSDT framework is to download it from [PyPI](https://pypi.org/project/MAPSDT).
 ```
@@ -17,7 +16,7 @@ pip install MAPSDT==0.3.2
 ```
 
 ### Usage
------
+
 
 The target column must be in the last column of the csv file, and the column must be named '**Decision**'.
 ```python
@@ -39,7 +38,7 @@ MAPSDT(df,                          		     # Dataset
 ```
 
 ### **Outcomes**
------
+
 
 Built decision tree image is stored as Visualization.gv.svg in the /test-output directory.
 ![image](https://user-images.githubusercontent.com/70674000/141953129-3ed83e44-561f-4508-8c58-b97f9600eb45.png)
