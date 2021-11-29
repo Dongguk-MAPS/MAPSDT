@@ -19,7 +19,7 @@ import pandas as pd
 from MAPSDT import *
 
 df = pd.read_csv('dataset/wine.csv')
-target_names = ['True', 'False']
+target_names = ['good', 'bad']
 MAPSDT(df,                          		     # Dataset
        target_names,				     # type: list
        tree=None,                   	             # You can use pre-trained trees.
