@@ -13,7 +13,7 @@ The easiest way to install MAPSDT framework is to download it from [PyPI](https:
 pip install MAPSDT==0.3.2
 ```
 
-###**Usage**
+###Usage
 The target column must be in the last column of the csv file, and the column must be named '**Decision**'.
 ```python
 import pandas as pd
