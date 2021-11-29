@@ -14,6 +14,7 @@ pip install MAPSDT==0.3.2
 ```
 
 **Usage**
+
 The target column must be in the last column of the csv file, and the column must be named '**Decision**'.
 ```python
 import pandas as pd
