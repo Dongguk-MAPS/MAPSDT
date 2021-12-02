@@ -12,7 +12,7 @@
 
 The easiest way to install MAPSDT framework is to download it from [PyPI](https://pypi.org/project/MAPSDT).
 ```
-pip install MAPSDT==0.3.2
+pip install MAPSDT==1.0.1
 ```
 
 ### Usage
