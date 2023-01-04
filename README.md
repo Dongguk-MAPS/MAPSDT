@@ -12,7 +12,7 @@
 
 The easiest way to install MAPSDT framework is to download it from [PyPI](https://pypi.org/project/MAPSDT).
 ```
-pip install MAPSDT==1.0.1
+pip install MAPSDT==3.0.0
 ```
 
 ### Usage
@@ -30,10 +30,13 @@ MAPSDT(df,                          		     # Dataset
        tree=None,                   	             # You can use pre-trained trees.
        split_portion=0.3,           		     # Decide the ratio of datasets.
        max_depth=5, 		    		     # The maximum depth of the tree.
+       fast_learning=False,			     # if True, the number of breakpoints for each attribute is 7.
        Genetic_Progrmmaing=False,    		     # You can use Genetic Programming for Feature Extraction.
        init_size=50,		     		     # If you use GP, set initial pool size.
        max_generations=50,          		     # If you use GP, set the maximum generations.
        save=True		    		     # You can save the decision tree.
+       GR_correction=True,			     # If True, use Gain Ratio corrected by Leroux et al.(2018)
+       visualizing=True,		 	     # Visualize the tree
        )
 ```
 
