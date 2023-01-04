@@ -6,19 +6,21 @@ from colorama import Style, Fore
 import data_load as data_load
 from Genetic_Programming import GPFE
 from functions import calculateEntropy, processContinuousFeatures
+from sympy import sympify
 
 
-def buildDecisionTree(train_data, attribute, test_data, config):
+def buildDecisionTree(config):
+    train_data, attribute, test_data = config['train_data'], config['attribute'], config['test_data']
     attribute_new = copy.deepcopy(attribute)
     max_depth = config['max_depth']
     geneticProgramming = config['Genetic Programming']
     if geneticProgramming:
         cntnAttr = list(filter(lambda x: x.type is 'Continuous', attribute_new))
-        chromosome_list, forest = GPFE(cntnAttr, attribute_new, train_data, test_data, config)
+        forest = GPFE(cntnAttr, attribute_new, config)
         best_tree = sorted(forest, key=lambda x: x.accuracy, reverse=True)[0]
         return best_tree.rule_decision, best_tree.leaf, best_tree.root
 
-    winner_attribute, train_data = findGains(train_data, attribute_new)
+    winner_attribute, train_data = findGains(train_data, attribute_new, 1, max_depth, config)
     if winner_attribute.type is 'Continuous':
         classes = list(set(map(lambda x: x.winner, train_data)))
 
@@ -32,11 +34,12 @@ def buildDecisionTree(train_data, attribute, test_data, config):
     leaf_list = []  # 모든 leaf
     result_leaf = []  # terminateBuilding 이 True 인 leaf
 
-    decisions = list(set(list(map(lambda x: x.Decision, train_data))))
+    decisions = [str(i) for i in range(len(config['target_names']))]
 
     # =========================================
 
-    for _leaf, _index in enumerate(tqdm(range(len(classes)), desc=Fore.GREEN + Style.BRIGHT + "Creating Root...           ", mininterval=0.1, ncols=150)):
+    # for _leaf, _index in enumerate(tqdm(range(len(classes)), desc=Fore.GREEN + Style.BRIGHT + "Creating Root...           ", mininterval=0.1,ncols=150)):
+    for _leaf, _index in enumerate(range(len(classes))):
         _leaf = data_load.Leaf()
         if winner_attribute.type is 'Continuous':
             if 'obj.' in winner_attribute.name:
@@ -44,7 +47,7 @@ def buildDecisionTree(train_data, attribute, test_data, config):
             else:
                 _leaf.rule += 'obj.' + str(winner_attribute.name) + ' ' + str(classes[_index])
             processed_data = list(filter(lambda x: x.winner == classes[_index], train_data))
-            print()
+
         else:
             _leaf.rule += 'obj.' + str(winner_attribute.name) + ' == ' + "'" + str(classes[_index]) + "'"
             processed_data = list(
@@ -85,13 +88,14 @@ def buildDecisionTree(train_data, attribute, test_data, config):
     # =========================================
     depth = 2
     while len(set(filter(lambda x: x.terminateBuilding is False, leaf_list))) >= 1:
-        for _leaf in tqdm(list(filter(lambda x: x.terminateBuilding is False, leaf_list)),
-                          desc=Fore.GREEN + Style.BRIGHT + "Creating Tree...(Depth = " + str(depth) + ')', mininterval=0.1, ncols=150):
+        notTerminated = list(filter(lambda x: x.terminateBuilding is False, leaf_list))
+        # for _leaf in tqdm(notTerminated, desc=Fore.GREEN + Style.BRIGHT + "Creating Tree...(Depth = " + str(depth) + ')', mininterval=0.1, ncols=150):
+        for _leaf in notTerminated:
 
             attribute_new = copy.deepcopy(attribute)
             if geneticProgramming:
                 cntnAttr = list(filter(lambda x: x.type is 'Continuous', attribute_new))
-                chromosome_list = GPFE(cntnAttr, attribute_new, _leaf.dataset, config)
+                chromosome_list = GPFE(cntnAttr, attribute_new, _leaf.dataset, test_data, config)
                 for _chrom in chromosome_list:
                     new_attribute = data_load.Attribute()
                     new_attribute.name = _chrom.chromosome
@@ -100,7 +104,7 @@ def buildDecisionTree(train_data, attribute, test_data, config):
                     attribute_new.append(new_attribute)
                     for obj in _leaf.dataset:
                         setattr(obj, new_attribute.name, eval(new_attribute.name))
-            winner_attribute, _leaf.dataset = findGains(_leaf.dataset, attribute_new)
+            winner_attribute, _leaf.dataset = findGains(_leaf.dataset, attribute_new, depth, max_depth, config)
             _leaf.branchAttribute = winner_attribute.name
             if winner_attribute.type is 'Continuous':
                 classes = list(set(map(lambda x: x.winner, _leaf.dataset)))
@@ -156,7 +160,7 @@ def buildDecisionTree(train_data, attribute, test_data, config):
                             _child_leaf.terminateBuilding = True
                             result_leaf.append(_child_leaf)
 
-                        if _child_leaf.branch >= max_depth - 1:
+                        if _child_leaf.branch >= max_depth:
                             _child_leaf.terminateBuilding = True
                             result_leaf.append(_child_leaf)
 
@@ -175,14 +179,15 @@ def buildDecisionTree(train_data, attribute, test_data, config):
     return rule_decision, leaf_list, root
 
 
-def findGains(data, attribute):
+def findGains(data, attribute, depth, max_depth, config):
+    GR_correction = config['GR_correction']
     gains = []
     entropy = calculateEntropy(data)
     attribute = list(filter(lambda x: x.name not in data[0].usedCategorical, attribute))
     for _index in range(len(attribute)):
         if attribute[_index].name != 'Decision':
             if attribute[_index].type is 'Continuous':
-                data = processContinuousFeatures(data, attribute[_index], entropy)
+                data = processContinuousFeatures(data, attribute[_index], entropy, depth, max_depth, config)
                 classes = set(map(lambda x: x.winner, data))
             else:
                 classes = set(map(lambda x: x.__getattribute__(attribute[_index].name), data))
@@ -206,19 +211,30 @@ def findGains(data, attribute):
                 subset_entropy = calculateEntropy(subdataset)
                 gain = gain - class_probability * subset_entropy
 
-                splitinfo = splitinfo - class_probability * math.log(class_probability, 2)
+                if not GR_correction:
+                    splitinfo = splitinfo - class_probability * math.log(class_probability, 2)
+                elif GR_correction:
+                    splitinfo = splitinfo + (math.log(subset_instances) - (
+                            class_probability * math.log(subset_instances * class_probability, 2)))
 
             if splitinfo == 0:
                 splitinfo = 100  # this can be if data set consists of 2 rows and current column consists of 1 class. still decision can be made (decisions for these 2 rows same). set splitinfo to very large value to make gain ratio very small. in this way, we won't find this column as the most dominant one.
-            gain = gain / splitinfo
 
+            if not GR_correction:
+                gain = gain / splitinfo
+            elif GR_correction:
+                gain = gain / (1 + splitinfo)
             gains.append(gain)
     winner_index = gains.index(max(gains))
+
+    if (attribute[winner_index].name == '0') or (attribute[winner_index].name == '1') or (
+            attribute[winner_index].name == '2') or (attribute[winner_index].name == '1/2'):
+        winner_index += 1
 
     if attribute[winner_index].name == 'Decision':
         winner_index += 1
 
     winner_attribute = attribute[winner_index]
     if winner_attribute.type is 'Continuous':
-        data = processContinuousFeatures(data, winner_attribute, entropy)
+        data = processContinuousFeatures(data, winner_attribute, entropy, depth, max_depth, config)
     return winner_attribute, data
