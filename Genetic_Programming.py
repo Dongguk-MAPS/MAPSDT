@@ -6,60 +6,114 @@ import Training
 import MAPSC45 as mc
 from data_load import DT
 import pickle
+from sympy import sympify
+import gc
 
 
-def GPFE(continuousAttr, attribute, train_data, test_data, config):
-    def init_population(_init_size, _continuousAttr):
-        _chromosome_list, gene, operation = [], [], ['+', '-', '*']  # , '/'
-        selectOP = np.random.choice(operation, _init_size * 5)
-        m = len(selectOP) * 2
-        operation.append(' ')
-        for i in range(m):
-            op = np.random.choice(operation, 1)
-            if op in ('+', '-', '*', '/'):
-                if op == '-':
-                    random_choice = np.random.choice(_continuousAttr, 2, replace=False)
+def GPFE(continuousAttr, attribute, config):
+    train_data, test_data = config['train_data'], config['test_data']
+
+    def init_population(_init_size, _continuousAttr, _attribute, _data):
+        used_chromosome, population_list = [], []
+        while True:
+            _chromosome_list, operation, operation2 = [], ['+', '-', '*', '/'], ['+', '-', '*', '/', 'attr']
+            chromosome_in_population = 10
+            while len(_chromosome_list) != chromosome_in_population:
+                _chr = data_load.Chromosome(_attribute, _data)
+
+                selectOP1 = np.random.choice(operation, 1, replace=True)
+                selectOP2 = np.random.choice(operation2, 2, replace=True)
+                if selectOP2[0] == '-':
+                    selectATTR1 = np.random.choice(_continuousAttr, 2, replace=False)
                 else:
-                    random_choice = np.random.choice(_continuousAttr, 2, replace=True)
-                attr1, attr2 = random_choice[0].name, random_choice[1].name
-                gene.append(str('(obj.' + attr1 + op[0] + 'obj.' + attr2 + ')'))
-            else:
-                attr1 = np.random.choice(_continuousAttr, 1)[0].name
-                gene.append('obj.' + attr1)
+                    selectATTR1 = np.random.choice(_continuousAttr, 2, replace=True)
+                if selectOP2[1] == '-':
+                    selectATTR2 = np.random.choice(_continuousAttr, 2, replace=False)
+                else:
+                    selectATTR2 = np.random.choice(_continuousAttr, 2, replace=True)
+                selectATTR = np.concatenate((selectATTR1, selectATTR2), axis=None)
+                _chr.string.extend(selectOP1[0])
+                _chr.string.insert(0, selectOP2[0])
+                _chr.string.insert(0, selectATTR[0])
+                if selectOP2[0] != 'attr':
+                    _chr.string.insert(0, selectATTR[1])
+                else:
+                    _chr.string.insert(0, 'BLANK')
+                _chr.string.insert(0, selectOP2[1])
+                _chr.string.insert(0, selectATTR[2])
+                if selectOP2[1] != 'attr':
+                    _chr.string.insert(0, selectATTR[3])
+                else:
+                    _chr.string.insert(0, 'BLANK')
+                if _chr.combine() == False:
+                    continue
+                else:
+                    # _chr.combine()
+                    _chromosome_list.append(_chr)
+                    try:
+                        list(filter(lambda obj: eval(_chr.expression) != 0, train_data))
+                    except:
+                        _chromosome_list.remove(_chr)
 
-        for _chromosome, _index in enumerate(range(int(len(selectOP)/5))):
-            temp_list = []
-            for i in range(5):
-                _chromosome = Chromosome()
-                _chromosome.gene1, _chromosome.gene2, _chromosome.operation, _chromosome.generation = gene[0], gene[1], selectOP[_index], 1
-                _chromosome.combine()
-                temp_list.append(_chromosome)
-                gene.remove(gene[0])
-                gene.remove(gene[0])
-            _chromosome_list.append(temp_list)
-
-        forest = []
-        return _chromosome_list, forest
-
-    def fitness(_chromosome_list, forest, _data, _attribute, test_data, config):
-        for _chromosome in _chromosome_list:
             new_attribute_list = copy.deepcopy(_attribute)
             data = copy.deepcopy(_data)
-            for i in _chromosome:
+            for _chromosome in _chromosome_list:
                 new_attribute = data_load.Attribute()
-                new_attribute.name = i.chromosome
+                new_attribute.name = _chromosome.expression
                 new_attribute.type = 'Continuous'
                 new_attribute.new = True
                 new_attribute_list.append(new_attribute)
                 for obj in data:
                     setattr(obj, new_attribute.name, eval(new_attribute.name))
             config_new = copy.deepcopy(config)
+            config_new['train_data'] = data
+            config_new['attribute'] = new_attribute_list
             config_new['Genetic Programming'] = False
             config_new['save'] = False
 
             # ==========================================
 
-            rule_decision, leaf_list, root = Training.buildDecisionTree(data, new_attribute_list, test_data, config_new)
+            rule_decision, leaf_list, root = Training.buildDecisionTree(config_new)
+            for constructed_feature in _chromosome_list:
+                if constructed_feature.expression in list(map(lambda x: x.branchAttribute, leaf_list)):
+                    used_chromosome.append(constructed_feature)
+            if len(used_chromosome) >= _init_size * chromosome_in_population:
+                used_chromosome = used_chromosome[:_init_size * chromosome_in_population]
+                break
+        for i in range(_init_size):
+            population = data_load.Population()
+            population.population = used_chromosome[i * chromosome_in_population:(i + 1) * chromosome_in_population]
+            population_list.append(population)
+        forest = []
+        return population_list, forest
+
+    def fitness(_population_list, forest, _data, _attribute, test_data, config):
+        for _population in _population_list:
+            new_attribute_list = copy.deepcopy(_attribute)
+            data = copy.deepcopy(_data)
+            for _chromosome in _population.population:
+                new_attribute = data_load.Attribute()
+                new_attribute.name = _chromosome.expression
+                new_attribute.type = 'Continuous'
+                new_attribute.new = True
+                new_attribute.name = str(sympify(new_attribute.name.replace('.', ''))).replace('obj', 'obj.')
+                new_attribute_list.append(new_attribute)
+
+                for obj in data:
+                    try:
+                        setattr(obj, new_attribute.name, eval(new_attribute.name))
+                    except:
+                        print()
+
+            config_new = copy.deepcopy(config)
+            config_new['train_data'] = data
+            config_new['attribute'] = new_attribute_list
+            config_new['Genetic Programming'] = False
+            config_new['save'] = False
+
+            # ==========================================
+
+            rule_decision, leaf_list, root = Training.buildDecisionTree(config_new)
             tree = DT()
             tree.leaf = leaf_list
             tree.root = root
@@ -67,75 +121,179 @@ def GPFE(continuousAttr, attribute, train_data, test_data, config):
             tree.test_data = test_data
             tree.fit()
             accuracy, precision, recall, f1_score = mc.evaluate(tree.test_data)
-            tree.accuracy = accuracy
-            tree.chromosome = _chromosome
+            tree.fitness_value = accuracy
+            tree.population = _population
             forest.append(tree)
-        return _chromosome_list, forest
+            del data
+            del new_attribute_list
+        return forest
 
-    def crossover_mutate(_chromosome_list, _max_generation, forest, _data, test_data, config):
-        generation, operation = 2, ['+', '-', '*', ' ']  # , '/'
+    def crossover_mutate(_population_list, _max_generation, forest, _data, test_data, _continuousAttr, config):
+        generation, operation = 2, ['+', '-', '*', '/']
+        chromosome_in_population = 10
 
-        def tournament_selection(population):
-            parents = np.random.choice(population, 5)
-            parents = sorted(parents, key=lambda x: x.accuracy, reverse=True)
-            return parents[0].chromosome
+        def tournament_selection(_forest):
+            parents = np.random.choice(_forest, int(len(_forest) * 0.25), replace=False)
+            parents = sorted(parents, key=lambda x: x.fitness_value, reverse=True)
+            return parents[0]
 
         while generation <= _max_generation:
-            parent = [tournament_selection(forest) for i in range(int(config['init_size'] * 0.25))]
-            parent.extend(list(map(lambda x: x.chromosome, np.random.choice(forest, config['init_size'] - int(config['init_size'] * 0.25)))))
+            parent = sorted(forest, key=lambda x: x.fitness_value, reverse=True)[:int(config['init_size'] * 0.1) + 1]
+            parent.extend([tournament_selection(forest) for i in range(int(config['init_size'] * 0.9))])
             new_parent = []
-            for i in range(int(len(parent)/2)):
-                np.random.shuffle(parent)
-                child1 = parent[i*2][:3] + parent[i*2+1][3:]
-                child2 = parent[i*2+1][:3] + parent[i*2][3:]
-
-                mutate_probability = np.random.rand(1)[0]
-                if mutate_probability > 0.95:
-                    _operation = ['+', '-', '*', '/']
-                    selectOP = np.random.choice(_operation, 1)
-                    gene = []
-                    for i in range(2):
-                        op = np.random.choice(operation, 1)
-                        if op in ('+', '-', '*', '/'):
-                            if op == '-':
-                                random_choice = np.random.choice(continuousAttr, 2, replace=False)
-                            else:
-                                random_choice = np.random.choice(continuousAttr, 2, replace=True)
-                            attr1, attr2 = random_choice[0].name, random_choice[1].name
-                            gene.append(str('(obj.' + attr1 + op[0] + 'obj.' + attr2 + ')'))
-                        else:
-                            attr1 = np.random.choice(continuousAttr, 1)[0].name
-                            gene.append('obj.' + attr1)
-
-                    _chromosome = Chromosome()
-                    _chromosome.gene1, _chromosome.gene2, _chromosome.operation, _chromosome.generation = gene[0], gene[1], selectOP[0], 1
-                    _chromosome.combine()
-                    child2[-1] = _chromosome
+            np.random.shuffle(parent)
+            for i in range(int(len(parent) / 2)):
+                child1 = copy.deepcopy(parent[i * 2])
+                child2 = copy.deepcopy(parent[i * 2 + 1])
+                child1.population = parent[i * 2].population.population[:int(chromosome_in_population / 2)] + parent[
+                                                                                                                  i * 2 + 1].population.population[
+                                                                                                              int(
+                                                                                                                  chromosome_in_population / 2):]
+                child2.population = parent[i * 2 + 1].population.population[:int(chromosome_in_population / 2)] + \
+                                    parent[i * 2].population.population[int(chromosome_in_population / 2):]
 
                 new_parent.append(child1)
                 new_parent.append(child2)
+
+            for _population in new_parent:
+                for i in range(int(len(_population.population) / 2)):
+                    _copy1 = copy.deepcopy(_population.population[i * 2])
+                    _copy2 = copy.deepcopy(_population.population[i * 2 + 1])
+                    # _population.population[i*2].string = _copy1.string[:3] + _copy2.string[3:]
+                    mutate_probability = np.random.rand(1)[0]
+                    if mutate_probability > 0.7:
+                        def mutate1():
+                            _operation = ['+', '-', '*', '/', 'attr']
+
+                            selectOP = str(np.random.choice(_operation, 1, replace=True)[0])
+                            if selectOP == '-':
+                                selectATTR = np.random.choice(_continuousAttr, 2, replace=False)
+                            else:
+                                selectATTR = np.random.choice(_continuousAttr, 2, replace=True)
+
+                            if selectOP != 'attr':
+                                _population.population[i * 2].string[0] = selectATTR[0]
+                                _population.population[i * 2].string[1] = selectATTR[1]
+                                _population.population[i * 2].string[2] = selectOP
+
+                            else:
+                                _population.population[i * 2].string[0] = 'BLANK'
+                                _population.population[i * 2].string[1] = selectATTR[1]
+                                _population.population[i * 2].string[2] = selectOP
+
+                            combine_possible = _population.population[i * 2].combine()
+                            if combine_possible:
+                                try:
+                                    list(map(lambda obj: eval(_population.population[i * 2].expression), _data))
+                                except:
+                                    _population.population[i * 2] = _copy1
+                                    _population.population[i * 2].combine()
+                            else:
+                                _population.population[i * 2] = _copy1
+                                _population.population[i * 2].combine()
+
+                        mutate1()
+                    else:
+                        _population.population[i * 2].string = _copy1.string[:3] + _copy2.string[3:]
+                        combine_possible = _population.population[i * 2].combine()
+                        if combine_possible:
+                            try:
+                                list(map(lambda obj: eval(_population.population[i * 2].expression), _data))
+                            except:
+                                _population.population[i * 2] = _copy1
+                                _population.population[i * 2].combine()
+                        else:
+                            _population.population[i * 2] = _copy1
+                            _population.population[i * 2].combine()
+
+                    # _population.population[i*2+1].string = _copy2.string[:3] + _copy1.string[3:]
+                    mutate_probability = np.random.rand(1)[0]
+                    if mutate_probability > 0.7:
+                        def mutate2():
+                            _operation = ['+', '-', '*', '/', 'attr']
+
+                            selectOP = str(np.random.choice(_operation, 1, replace=True)[0])
+                            if selectOP == '-':
+                                selectATTR = np.random.choice(_continuousAttr, 2, replace=False)
+                            else:
+                                selectATTR = np.random.choice(_continuousAttr, 2, replace=True)
+
+                            if selectOP != 'attr':
+                                _population.population[i * 2 + 1].string[0] = selectATTR[0]
+                                _population.population[i * 2 + 1].string[1] = selectATTR[1]
+                                _population.population[i * 2 + 1].string[2] = selectOP
+
+                            else:
+                                _population.population[i * 2 + 1].string[0] = 'BLANK'
+                                _population.population[i * 2 + 1].string[1] = selectATTR[1]
+                                _population.population[i * 2 + 1].string[2] = selectOP
+
+                            combine_possible = _population.population[i * 2 + 1].combine()
+                            if combine_possible:
+                                try:
+                                    list(map(lambda obj: eval(_population.population[i * 2 + 1].expression), _data))
+                                except:
+                                    _population.population[i * 2 + 1] = _copy2
+                                    _population.population[i * 2 + 1].combine()
+                            else:
+                                _population.population[i * 2 + 1] = _copy2
+                                _population.population[i * 2 + 1].combine()
+
+                        mutate2()
+                    else:
+                        _population.population[i * 2 + 1].string = _copy2.string[:3] + _copy1.string[3:]
+                        combine_possible = _population.population[i * 2 + 1].combine()
+                        if combine_possible:
+                            try:
+                                list(map(lambda obj: eval(_population.population[i * 2 + 1].expression), _data))
+                            except:
+                                _population.population[i * 2 + 1] = _copy2
+                                _population.population[i * 2 + 1].combine()
+                        else:
+                            _population.population[i * 2 + 1] = _copy2
+                            _population.population[i * 2 + 1].combine()
+
+                    del _copy1
+                    del _copy2
+                    gc.collect()
+
             new_forest = []
-            _chromosome_list, forest = fitness(new_parent, new_forest, _data, attribute, test_data, config)
+            forest = fitness(new_parent, new_forest, _data, attribute, test_data, config)
             print(generation, ' Generation completed...')
-            best_tree = sorted(forest, key=lambda x: x.accuracy, reverse=True)[0]
-            print(best_tree.accuracy * 100)
+            if config['best_tree'].fitness_value <= sorted(forest, key=lambda x: x.fitness_value, reverse=True)[
+                0].fitness_value:
+                config['best_tree'] = sorted(forest, key=lambda x: x.fitness_value, reverse=True)[0]
+
+            print(config['best_tree'].fitness_value * 100)
             if config['save']:
                 with open('tree/' + 'Depth' + str(config['max_depth']) + '_' + str(generation) + 'generation' + '.p',
                           'wb') as file:  # james.p 파일을 바이너리 쓰기 모드(wb)로 열기
-                    pickle.dump(best_tree, file)
+                    pickle.dump(config['best_tree'], file)
+                f = open(
+                    'test-output/' + 'Depth' + str(config['max_depth']) + '_' + str(generation) + 'generation' + '.txt',
+                    'w')
+                for i in config['best_tree'].rule_decision:
+                    rule = i[0] + '=' + str(config['target_names'][int(i[1])] + '\n')
+                    f.write(rule)
             generation += 1
+            del parent
+            gc.collect()
 
-        return _chromosome_list, forest
+        return forest
 
     init_size = config['init_size']
-    chromosome_list, forest = init_population(init_size, continuousAttr)
-    chromosome_list, forest = fitness(chromosome_list, forest, train_data, attribute, test_data, config)
+    population_list, forest = init_population(init_size, continuousAttr, attribute, train_data)
+    forest = fitness(population_list, forest, train_data, attribute, test_data, config)
     print('\nInitial population completed...')
-    best_tree = sorted(forest, key=lambda x: x.accuracy, reverse=True)[0]
-    print(best_tree.accuracy * 100)
+    config['best_tree'] = sorted(forest, key=lambda x: x.fitness_value, reverse=True)[0]
+    print(config['best_tree'].fitness_value * 100)
     if config['save']:
         with open('tree/' + 'Depth' + str(config['max_depth']) + '_' + str(1) + 'generation' + '.p', 'wb') as file:
-            pickle.dump(best_tree, file)
+            pickle.dump(config['best_tree'], file)
+        f = open('test-output/' + 'Depth' + str(config['max_depth']) + '_' + str(1) + 'generation' + '.txt', 'w')
+        for i in config['best_tree'].rule_decision:
+            rule = i[0] + '=' + str(config['target_names'][int(i[1])] + '\n')
+            f.write(rule)
     max_generation = config['max_generations']
-    chromosome_list, forest = crossover_mutate(chromosome_list, max_generation, forest, train_data, test_data, config)
-    return chromosome_list, forest
+    forest = crossover_mutate(population_list, max_generation, forest, train_data, test_data, continuousAttr, config)
+    return forest
