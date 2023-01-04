@@ -8,10 +8,12 @@ from data_load import DT
 import pickle
 from sympy import sympify
 import gc
-
+import os
 
 def GPFE(continuousAttr, attribute, config):
     train_data, test_data = config['train_data'], config['test_data']
+    if not os.path.exists('population'):
+        os.makedirs('population')
 
     def init_population(_init_size, _continuousAttr, _attribute, _data):
         used_chromosome, population_list = [], []
@@ -121,6 +123,10 @@ def GPFE(continuousAttr, attribute, config):
             tree.test_data = test_data
             tree.fit()
             accuracy, precision, recall, f1_score = mc.evaluate(tree.test_data)
+            with open('population/' + 'chromosome' + str(accuracy) + '.p',
+                      'wb') as file:  # james.p 파일을 바이너리 쓰기 모드(wb)로 열기
+                pickle.dump(tree, file)
+
             tree.fitness_value = accuracy
             tree.population = _population
             forest.append(tree)
@@ -294,6 +300,7 @@ def GPFE(continuousAttr, attribute, config):
         for i in config['best_tree'].rule_decision:
             rule = i[0] + '=' + str(config['target_names'][int(i[1])] + '\n')
             f.write(rule)
+
     max_generation = config['max_generations']
     forest = crossover_mutate(population_list, max_generation, forest, train_data, test_data, continuousAttr, config)
     return forest
