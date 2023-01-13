@@ -25,12 +25,16 @@ def GPFE(continuousAttr, attribute, config):
 
                 selectOP1 = np.random.choice(operation, 1, replace=True)
                 selectOP2 = np.random.choice(operation2, 2, replace=True)
-                if selectOP2[0] == '-':
-                    selectATTR1 = np.random.choice(_continuousAttr, 2, replace=False)
+                if (selectOP2[0] == '-') or (selectOP2[0] == '+'):
+                    selectATTR1 = np.random.choice(_continuousAttr, 1, replace=False)
+                    selectATTR1 = np.append(selectATTR1, np.random.choice(list(filter(lambda x:(x.unit==selectATTR1[0].unit) and x != selectATTR1[0], _continuousAttr)), 1)[0])
+
                 else:
                     selectATTR1 = np.random.choice(_continuousAttr, 2, replace=True)
-                if selectOP2[1] == '-':
-                    selectATTR2 = np.random.choice(_continuousAttr, 2, replace=False)
+                if (selectOP2[1] == '-') or (selectOP2[1] == '+'):
+                    selectATTR2 = np.random.choice(_continuousAttr, 1, replace=False)
+                    selectATTR2 = np.append(selectATTR2, np.random.choice(list(filter(lambda x:(x.unit==selectATTR2[0].unit) and x != selectATTR2[0], _continuousAttr)), 1)[0])
+
                 else:
                     selectATTR2 = np.random.choice(_continuousAttr, 2, replace=True)
                 selectATTR = np.concatenate((selectATTR1, selectATTR2), axis=None)
@@ -44,7 +48,10 @@ def GPFE(continuousAttr, attribute, config):
                 _chr.string.insert(0, selectOP2[1])
                 _chr.string.insert(0, selectATTR[2])
                 if selectOP2[1] != 'attr':
-                    _chr.string.insert(0, selectATTR[3])
+                    try:
+                        _chr.string.insert(0, selectATTR[3])
+                    except:
+                        print()
                 else:
                     _chr.string.insert(0, 'BLANK')
                 if _chr.combine() == False:
@@ -172,8 +179,12 @@ def GPFE(continuousAttr, attribute, config):
                             _operation = ['+', '-', '*', '/', 'attr']
 
                             selectOP = str(np.random.choice(_operation, 1, replace=True)[0])
-                            if selectOP == '-':
-                                selectATTR = np.random.choice(_continuousAttr, 2, replace=False)
+                            if (selectOP == '-') or (selectOP == '+'):
+                                selectATTR = np.random.choice(_continuousAttr, 1, replace=False)
+                                selectATTR = np.append(selectATTR, np.random.choice(list(
+                                    filter(lambda x: (x.unit == selectATTR[0].unit) and x != selectATTR[0],
+                                           _continuousAttr)), 1)[0])
+
                             else:
                                 selectATTR = np.random.choice(_continuousAttr, 2, replace=True)
 
@@ -219,8 +230,11 @@ def GPFE(continuousAttr, attribute, config):
                             _operation = ['+', '-', '*', '/', 'attr']
 
                             selectOP = str(np.random.choice(_operation, 1, replace=True)[0])
-                            if selectOP == '-':
-                                selectATTR = np.random.choice(_continuousAttr, 2, replace=False)
+                            if (selectOP == '-') or (selectOP == '+'):
+                                selectATTR = np.random.choice(_continuousAttr, 1, replace=False)
+                                selectATTR = np.append(selectATTR, np.random.choice(list(
+                                    filter(lambda x: (x.unit == selectATTR[0].unit) and x != selectATTR[0],
+                                           _continuousAttr)), 1)[0])
                             else:
                                 selectATTR = np.random.choice(_continuousAttr, 2, replace=True)
 
