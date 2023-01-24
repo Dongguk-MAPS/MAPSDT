@@ -49,9 +49,8 @@ def processContinuousFeatures(data, attribute, entropy, depth, max_depth, config
 
     for i in range(0, len(unique_values) - 1):
         threshold = unique_values[i]
-        subset1 = list(filter(lambda x: np.float64(x.__getattribute__(attribute.name)) <= threshold, data))
-        subset2 = list(filter(lambda x: np.float64(x.__getattribute__(attribute.name)) > threshold, data))
-
+        subset1, subset2 = [], []
+        [subset1.append(i) if np.float64(i.__getattribute__(attribute.name)) <= threshold else subset2.append(i) for i in data]
         subset1_rows = len(subset1)
         subset2_rows = len(subset2)
         total_instances = len(data)
