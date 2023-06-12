@@ -33,7 +33,7 @@ MAPSDT(df,                          		     # Dataset
        Genetic_Progrmmaing=False,    		     # You can use Genetic Programming for Feature Extraction.
        init_size=50,		     		     # If you use GP, set initial pool size.
        max_generations=50,          		     # If you use GP, set the maximum generations.
-       save=True		    		     # You can save the decision tree.
+       save=True,		    		     # You can save the decision tree.
        GR_correction=True,			     # If True, use Gain Ratio corrected by Leroux et al.(2018)
        visualizing=True,		 	     # Visualize the tree
        )
