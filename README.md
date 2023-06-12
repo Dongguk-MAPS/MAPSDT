@@ -37,6 +37,77 @@ MAPSDT(df,                          		     # Dataset
        GR_correction=True,			     # If True, use Gain Ratio corrected by Leroux et al.(2018)
        visualizing=True,		 	     # Visualize the tree
        )
+       
+"""
+전체 흐름도
+
+preprocessingData에서 데이터 스플릿, 데이터를 column마다 객체화
+creatTree에서 buildDecisionTree으로 DT를 만들고, 새로운 나무에 만든 DT를 보완하여 적용 
+
+       create와 build를 분리한 이유
+       1.buildDecisionTree로 나무를 만들고, 완성된 나무를 보고 필요한 또 다른 기능이 있을까봐 분리는 해놨지만 현재는 가지치기 기능만 있음
+       
+       2.train으로 build하고 test에 적용한 나무는 create라고 봐도 무방
+
+
+buildDecisionTree에 진입할 때, GP=True이면 GP로 buildDecisionTree를 n세대까지 반복
+        GP=False이면 limited_height까지 나무 생성
+        
+        노드 이름 규칙 (각 노드의 부모나 자식 노드에 접근하기 쉽게하기 위해 아래 처럼 규칙에 맞게 생성)
+        규칙: 부모이름+몇번째자식인지
+        ex) 부모이름: 10, 3번째자식: 2
+            노드이름 = 102
+            
+                        1
+                  10         11
+              100   101   110  111
+        
+        나무 생성과정
+              층별로 균등하게 자라도록 설계되어있음
+              
+              1층
+              1. findGains로 분기할 attribute 찾기 (winner_attribute)
+              2. train 샘플 분기
+
+              1층 이후
+              왼쪽부터 오른쪽으로 생성
+              1. 분기 종료조건 검사
+              2. findGains로 분기할 attribute 찾기 (winner_attribute)
+              3. 해당 노드의 샘플 분기
+              4. 해당 층 분기가 끝나면 다음 층 가장 왼쪽노드부터 1.~3. 반복
+              
+              * 생성한 나무의 정보를 저장하고 새로운 나무에 보완하여 적용예정이라, 분기마다 노드의 정보는 다 저장
+              
+              * findGains에서 비효율적인 흐름 있음.
+                     2.에서 winner_attribute를 찾으려고 계산한 결과를 저장못해놔서, 3.에서 해당 attribute를 다시 계산함
+                     
+buildDeicsionTree 이후
+       저장된 나무에 data를 test 데이터로 적용하여 fit
+              모든 노드마다 저장된 rule에 데이터 하나하나 적용해보며 해당 노드에 속해있는지 검사하는 방식이라
+              계산 시간 오래 걸리는 부분
+              
+visualizing
+       노드 이름으로 부모/자식노드를 연결하는 방식
+
+       
+       
+"""
+
+"""
+주로 발생하는 에러 1.
+TypeError: unsupported operand type(s) for +: 'NoneType' and 'str'
+
+데이터 별로 unit을 불러오는 함수가 다름
+MAPSDT > preprocessingData (line: 30) > get_???_unit (line: 46)에서 데이터에 맞게 수정
+
+--------------------------------------------------------------------------------------
+
+주로 발생하는 에러 2.
+간혹 연속/범주형 변수를 나누는 기준 (unique value의 수)으로 인해 발생
+
+functions.py > processContinuousFeatures (line: 20)에서 숫자 조정
+data_load > attribute_set (line: 136)에서 숫자 조정
+"""       
 ```
 
 ### **Outcomes**
